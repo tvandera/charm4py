@@ -21,7 +21,6 @@ if system == 'Windows' or system.lower().startswith('cygwin'):
     libcharm_filename2 = 'charm.lib'
     charmrun_filename = 'charmrun.exe'
 elif system == 'Darwin':
-    os.environ['ARCHFLAGS'] = '-arch x86_64'
     libcharm_filename = 'libcharm.dylib'
     charmrun_filename = 'charmrun'
 else:
@@ -286,7 +285,9 @@ elif 'CPY_WHEEL_BUILD_UNIVERSAL' not in os.environ:
                               libraries=["charm"],
                               extra_compile_args=['-g0', '-O3'],
                               extra_link_args=extra_link_args,
-                              ), compile_time_env={'HAVE_NUMPY': haveNumpy}))
+                              ),
+                              build_dir='build',
+                              compile_time_env={'HAVE_NUMPY': haveNumpy}))
     else:
         try:
             check_cffi()
