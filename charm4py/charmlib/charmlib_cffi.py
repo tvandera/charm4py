@@ -466,19 +466,6 @@ class CharmLib(object):
     except:
       charm.handleGeneralError()
 
-  def CkContributeToChare(self, contributeInfo, cid):
-    objPtr = ffi.cast("void*", cid[1])
-    lib.CkExtContributeToChare(contributeInfo.data, cid[0], objPtr)
-
-  def CkContributeToGroup(self, contributeInfo, gid, elemIdx):
-    lib.CkExtContributeToGroup(contributeInfo.data, gid, elemIdx)
-
-  def CkContributeToArray(self, contributeInfo, aid, index):
-    lib.CkExtContributeToArray(contributeInfo.data, aid, index, len(index))
-
-  def CkContributeToSection(self, contributeInfo, sid, rootPE):
-    lib.CkExtContributeToSection(contributeInfo.data, sid[0], sid[1], rootPE)
-
   def CkStartQD_ChareCallback(self, cid, ep, fid):
     objPtr = ffi.cast("void*", cid[1])
     lib.CkStartQDExt_ChareCallback(cid[0], objPtr, ep, fid)
@@ -763,12 +750,6 @@ class CharmLib(object):
 
   def CkAbort(self, msg):
     lib.CmiAbort(b"%s", ffi.new("char[]", msg.encode()))
-
-  def LBTurnInstrumentOn(self):
-    lib.LBTurnInstrumentOn()
-
-  def LBTurnInstrumentOff(self):
-    lib.LBTurnInstrumentOff()
 
   def CkGetFirstPeOnPhysicalNode(self, node):
     return lib.CmiGetFirstPeOnPhysicalNode(node)

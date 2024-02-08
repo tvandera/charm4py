@@ -110,8 +110,6 @@ ffibuilder.cdef("""
     void realCkExit(int exitcode);
     void CmiAbort(const char *, ...);
     void CmiPrintf(const char *, ...);
-    void LBTurnInstrumentOn();
-    void LBTurnInstrumentOff();
     void free(void *ptr);
 
     int CmiPeOnSamePhysicalNode(int pe1, int pe2);
@@ -239,10 +237,6 @@ ffibuilder.cdef("""
     void registerPyReductionExtCallback(int (*cb)(char**, int*, int, char**));
     void registerArrayMapProcNumExtCallback(int (*cb)(int, int, const int *));
 
-    void CkExtContributeToChare(struct ContributeInfo* contribute_params, int onPE, void* objPtr);
-    void CkExtContributeToGroup(struct ContributeInfo* contribute_params, int gid, int pe);
-    void CkExtContributeToArray(struct ContributeInfo* contribute_params, int aid, int* idx, int ndims);
-    void CkExtContributeToSection(void* contribute_params, int sid_pe, int sid_cnt, int rootPE);
     void CkStartQDExt_ChareCallback(int onPE, void* objPtr, int epIdx, int fid);
     void CkStartQDExt_GroupCallback(int gid, int pe, int epIdx, int fid);
     void CkStartQDExt_ArrayCallback(int aid, int* idx, int ndims, int epIdx, int fid);

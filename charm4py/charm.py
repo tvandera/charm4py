@@ -125,7 +125,7 @@ class Charm(object):
             except OSError:
                 # For IBM's Spectrum MPI, which is based on Open MPI, but renames the library
                 self.__libmpi__ = ctypes.CDLL('libmpi_ibm.so', mode=ctypes.RTLD_GLOBAL)
-                
+
         self.lib = load_charm_library(self)
         self.ReducerType = self.lib.ReducerType
         self.CkContributeToChare = self.lib.CkContributeToChare
@@ -1017,12 +1017,6 @@ class Charm(object):
     def addReducer(self, func):
         self.reducers.addReducer(func)
 
-    def LBTurnInstrumentOn(self):
-        self.lib.LBTurnInstrumentOn()
-
-    def LBTurnInstrumentOff(self):
-        self.lib.LBTurnInstrumentOff()
-
 
 class CharmRemote(Chare):
 
@@ -1034,12 +1028,6 @@ class CharmRemote(Chare):
 
     def myPe(self):
         return charm.myPe()
-
-    def LBTurnInstrumentOn(self):
-        charm.lib.LBTurnInstrumentOn()
-
-    def LBTurnInstrumentOff(self):
-        charm.lib.LBTurnInstrumentOff()
 
     def addReducer(self, func):
         charm.addReducer(func)

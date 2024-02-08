@@ -652,26 +652,6 @@ class CharmLib(object):
     finally:
       free(argv)
 
-  def CkContributeToChare(self, ContributeInfo contributeInfo not None, tuple cid not None):
-    objPtr = <void*>(<uintptr_t>cid[1])
-    CkExtContributeToChare(&contributeInfo.internal, <int>cid[0], objPtr)
-    contributeInfo.releaseBuffer()
-
-  def CkContributeToGroup(self, ContributeInfo contributeInfo not None, int gid, int elemIdx):
-    CkExtContributeToGroup(&contributeInfo.internal, gid, elemIdx)
-    contributeInfo.releaseBuffer()
-
-  def CkContributeToArray(self, ContributeInfo contributeInfo not None, int aid, index not None):
-    cdef int ndims = len(index)
-    cdef int i = 0
-    for i in range(ndims): c_index[i] = index[i]
-    CkExtContributeToArray(&contributeInfo.internal, aid, c_index, ndims)
-    contributeInfo.releaseBuffer()
-
-  def CkContributeToSection(self, ContributeInfo contributeInfo not None, tuple sid, int rootPE):
-    CkExtContributeToSection(&contributeInfo.internal, sid[0], sid[1], rootPE)
-    contributeInfo.releaseBuffer()
-
   def CkStartQD_ChareCallback(self, tuple cid not None, int ep, int fid):
     objPtr = <void*>(<uintptr_t>cid[1])
     CkStartQDExt_ChareCallback(<int>cid[0], objPtr, ep, fid)
@@ -714,8 +694,6 @@ class CharmLib(object):
   def CkExit(self, int exitCode): return realCkExit(exitCode)
   def CkPrintf(self, bytes msg): CmiPrintf("%s", msg)
   def CkAbort(self, str msg): return CmiAbort("%s", <bytes>msg.encode())
-  def LBTurnInstrumentOn(self):  LBTurnInstrumentOn()
-  def LBTurnInstrumentOff(self): LBTurnInstrumentOff()
   def CkGetFirstPeOnPhysicalNode(self, int node): return CmiGetFirstPeOnPhysicalNode(node)
   def CkPhysicalNodeID(self, int pe): return CmiPhysicalNodeID(pe)
   def CkNumPhysicalNodes(self): return CmiNumPhysicalNodes()
