@@ -10,6 +10,8 @@ cdef extern from "charm.h":
     void realCkExit(int exitcode);
     void CmiAbort(const char *, ...);
     void CmiPrintf(const char *, ...);
+    void LBTurnInstrumentOn();
+    void LBTurnInstrumentOff();
 
     int CmiPeOnSamePhysicalNode(int pe1, int pe2);
     int CmiNumPhysicalNodes();
@@ -64,8 +66,14 @@ cdef extern from "charm.h":
     void CkStartQDExt_SectionCallback(int sid_pe, int sid_cnt, int rootPE, int ep);
     void CcdCallFnAfter(void (*CcdVoidFn)(void *userParam,double curWallTime), void *arg, double msecs);
 
+cdef extern:
+    void CkExtContributeToChare(void* contribute_params, int onPE, void* objPtr);
+    void CkExtContributeToGroup(void* contribute_params, int gid, int pe);
+    void CkExtContributeToArray(void* contribute_params, int aid, int* idx, int ndims);
+    void CkExtContributeToSection(void* contribute_params, int sid_pe, int sid_cnt, int rootPE);
 
 cdef extern from "spanningTree.h":
     void getPETopoTreeEdges(int pe, int rootPE, int *pes, int numpes, unsigned int bfactor,
                             int *parent, int *child_count, int **children);
+
 

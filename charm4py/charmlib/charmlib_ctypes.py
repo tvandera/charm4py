@@ -442,6 +442,20 @@ class CharmLib(object):
     except:
       self.charm.handleGeneralError()
 
+  def CkContributeToChare(self, contributeInfo, cid):
+    self.lib.CkExtContributeToChare(ctypes.byref(contributeInfo), cid[0], cid[1])
+
+  def CkContributeToGroup(self, contributeInfo, gid, elemIdx):
+    self.lib.CkExtContributeToGroup(ctypes.byref(contributeInfo), gid, elemIdx)
+
+  def CkContributeToArray(self, contributeInfo, aid, index):
+    ndims = len(index)
+    c_elemIdx = (ctypes.c_int * ndims)(*index)
+    self.lib.CkExtContributeToArray(ctypes.byref(contributeInfo), aid, c_elemIdx, ndims)
+
+  def CkContributeToSection(self, contributeInfo, sid, rootPE):
+    self.lib.CkExtContributeToSection(ctypes.byref(contributeInfo), sid[0], sid[1], rootPE)
+
   def CkStartQD_ChareCallback(self, cid, ep, fid):
     self.lib.CkStartQDExt_ChareCallback(cid[0], cid[1], ep, fid)
 
@@ -590,16 +604,21 @@ class CharmLib(object):
     self.charm.lib_version_check(commit_id)
 
   def init(self, libcharm_path):
-    import os.path
-    if os.name != 'nt':
-      p = os.environ.get('LIBCHARM_PATH')
-      if p is not None: libcharm_path = p
-      if libcharm_path is not None:
-        self.lib = ctypes.CDLL(os.path.join(libcharm_path, 'libcharm.so'))
-      else:
-        self.lib = ctypes.CDLL('libcharm.so')
-    else:
-      self.lib = ctypes.CDLL(os.path.join(libcharm_path, 'charm.dll'))
+    from sys import platform
+    libcharm = {
+      'windows' : 'charm.dll',
+      'darwin' : 'libcharm.dylib',
+      'linux' : 'libcharm.so',
+    }[platform.lower()]
+
+    # override libcharm_path arg
+    p = os.environ.get('LIBCHARM_PATH')
+    if p is not None: libcharm_path = p
+
+    if libcharm_path is not None:
+        libcharm = os.path.join(libcharm_path, libcharm)
+
+    self.lib = ctypes.CDLL(libcharm)
 
     self.lib_version_check()
 
@@ -665,6 +684,7 @@ class CharmLib(object):
     self.CkArrayExtSend = self.lib.CkArrayExtSend
     self.CkGroupExtSend = self.lib.CkGroupExtSend
     self.CkChareExtSend = self.lib.CkChareExtSend
+    self.lib.CkExtContributeToChare.argtypes = (c_void_p, c_int, c_void_p)
     self.lib.CkStartQDExt_ChareCallback.argtypes = (c_int, c_void_p, c_int, c_int)
 
     self.CcdCallFnAfterCallback_cb = CFUNCTYPE(None, c_void_p, c_double)(self.CcdCallFnAfterCallback)
@@ -676,6 +696,12 @@ class CharmLib(object):
 
   def CkAbort(self, msg):
     self.lib.CmiAbort(b"%s", msg.encode())
+
+  def LBTurnInstrumentOn(self):
+    self.lib.LBTurnInstrumentOn()
+
+  def LBTurnInstrumentOff(self):
+    self.lib.LBTurnInstrumentOff()
 
   def CkGetFirstPeOnPhysicalNode(self, node):
     return self.lib.CmiGetFirstPeOnPhysicalNode(node)
