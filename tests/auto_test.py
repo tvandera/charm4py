@@ -68,7 +68,7 @@ for test in tests:
             additionalArgs = []
             if num_tests >= CHARM_QUIET_AFTER_NUM_TESTS and '++quiet' not in commonArgs:
                 additionalArgs.append('++quiet')
-            cmd = ['charmrun/charmrun']
+            cmd = ['../charmrun/charmrun']
             if test.get('prefix'):
                 cmd += [test['prefix']]
             if not test.get('interactive', False):
