@@ -3,10 +3,8 @@ include README.rst setup.py auto_test.py test_config.json AUTHORS.md LICENSE CHA
 
 include charm_src/charm.tar.gz
 
-exclude charm4py/charmlib/charmlib_cython.c
-
 recursive-include charm4py libcharm_version *.pxd *.pyx
-recursive-include docs *.py Makefile *.bat *.rst *.svg
+recursive-include docs *.py Makefile *.bat *.rst
 recursive-include examples *.py
 recursive-include tests *.py
 
