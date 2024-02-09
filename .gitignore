@@ -3,10 +3,6 @@ docs/_build/
 build/
 charm_src/
 charm4py/_version.py
-charm4py/charmlib/*.o
-charm4py/charmlib/*.so
-charm4py/charmlib/charmlib_cython.c
-charm4py/charmlib/_charmlib_cffi.c
 charm4py/charmlib/build/
 __pycache__
 charm4py.egg-info
