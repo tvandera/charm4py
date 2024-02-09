@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools_scm>=8", "Cython<3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "charm4py"
+dynamic = ["version"]
+description = 'Charm4py Parallel Programming Framework'
+keywords= ['parallel', 'parallel-programming', 'distributed', 'distributed-computing', 'hpc', 'HPC', 'runtime' ]
+readme = "README.rst"
+license = {file = "LICENSE"}
+authors = [
+    { name='Juan Galvez', email='jjgalvez@illinois.edu' },
+    { name='individual contributors' },
+]
+classifiers=[
+    'Intended Audience :: Developers',
+    'License :: Free for non-commercial use',
+    'Operating System :: MacOS :: MacOS X',
+    'Operating System :: POSIX',
+    'Operating System :: POSIX :: Linux',
+    'Operating System :: Microsoft :: Windows',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3.4',
+    'Programming Language :: Python :: 3.5',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
+    'Topic :: System :: Distributed Computing',
+    'Topic :: System :: Clustering',
+]
+
+dependencies = [
+  "numpy",
+  "greenlet",
+]
+
+[project.scripts]
+charmrun = "charmrun.start:start"
+
+[project.urls]
+Homepage  = 'https://github.com/UIUC-PPL/charm4py'
+Documentation = 'https://charm4py.readthedocs.io'
+
+[tool.setuptools_scm]
