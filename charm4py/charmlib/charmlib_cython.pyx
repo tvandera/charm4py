@@ -714,8 +714,6 @@ class CharmLib(object):
   def CkExit(self, int exitCode): return realCkExit(exitCode)
   def CkPrintf(self, bytes msg): CmiPrintf("%s", msg)
   def CkAbort(self, str msg): return CmiAbort("%s", <bytes>msg.encode())
-  def LBTurnInstrumentOn(self):  LBTurnInstrumentOn()
-  def LBTurnInstrumentOff(self): LBTurnInstrumentOff()
   def CkGetFirstPeOnPhysicalNode(self, int node): return CmiGetFirstPeOnPhysicalNode(node)
   def CkPhysicalNodeID(self, int pe): return CmiPhysicalNodeID(pe)
   def CkNumPhysicalNodes(self): return CmiNumPhysicalNodes()

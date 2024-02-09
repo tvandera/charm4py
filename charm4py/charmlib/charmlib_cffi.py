@@ -764,12 +764,6 @@ class CharmLib(object):
   def CkAbort(self, msg):
     lib.CmiAbort(b"%s", ffi.new("char[]", msg.encode()))
 
-  def LBTurnInstrumentOn(self):
-    lib.LBTurnInstrumentOn()
-
-  def LBTurnInstrumentOff(self):
-    lib.LBTurnInstrumentOff()
-
   def CkGetFirstPeOnPhysicalNode(self, node):
     return lib.CmiGetFirstPeOnPhysicalNode(node)
 
