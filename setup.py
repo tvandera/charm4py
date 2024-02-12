@@ -1,7 +1,6 @@
 import sys
 import os
-import shutil
-import platform
+from os.path import join as join_path
 import subprocess
 import setuptools
 from setuptools.command.build_ext import build_ext
@@ -12,368 +11,173 @@ from distutils import log
 import distutils
 import numpy
 
-build_mpi = False
+import ctypes
 
-system = platform.system()
-libcharm_filename2 = None
-if system == "Windows" or system.lower().startswith("cygwin"):
-    libcharm_filename = "charm.dll"
-    libcharm_filename2 = "charm.lib"
-    charmrun_filename = "charmrun.exe"
-elif system == "Darwin":
-    libcharm_filename = "libcharm.dylib"
-    charmrun_filename = "charmrun"
-else:
-    libcharm_filename = "libcharm.so"
-    charmrun_filename = "charmrun"
+log.set_verbosity(log.INFO)
 
+# configuration defaults
+# these can be overriden via environment variabels
+CONFIG_SETTINGS = {
+    # disable numpy
+    "NUMPY_ENABLED": True,
 
-def charm_built(charm_src_dir):
-    library_path = os.path.join(charm_src_dir, "charm", "lib", libcharm_filename)
-    if not os.path.exists(library_path):
-        return False
-    charmrun_path = os.path.join(charm_src_dir, "charm", "bin", charmrun_filename)
-    if not os.path.exists(charmrun_path):
-        return False
-    return True
+    # pre-compiled charmrun and libcharm from CHARM_ROOT
+    # try to compile from src when set to None
+    "CHARM_ROOT": "charm_src/charm",
 
+    # charm++ source archive to use when building libcharm from source
+    "CHARM_SOURCE_ARCHIVE": "charm_src/charm.tar.gz",
 
-def check_libcharm_version(charm_src_dir):
-    import ctypes
+    # arguments to pass to "./build" when building charm
+    # when not set, try to find a good default
+    "CHARM_BUILD_OPTS" : None,
 
-    library_path = os.path.join(charm_src_dir, "charm", "lib", libcharm_filename)
-    lib = ctypes.CDLL(library_path)
-    with open(os.path.join(os.getcwd(), "src", "charm4py", "libcharm_version"), "r") as f:
-        req_version = tuple(int(n) for n in f.read().split("."))
-    commit_id_str = ctypes.c_char_p.in_dll(lib, "CmiCommitID").value.decode()
-    version = [int(n) for n in commit_id_str.split("-")[0][1:].split(".")]
-    try:
-        version = tuple(version + [int(commit_id_str.split("-")[1])])
-    except:
-        version = tuple(version + [0])
-    if version < req_version:
-        req_str = ".".join([str(n) for n in req_version])
-        cur_str = ".".join([str(n) for n in version])
-        raise DistutilsSetupError(
-            "Charm++ version >= " + req_str + " required. "
-            "Existing version is " + cur_str
-        )
+    # what package to use for wrapping the C++ code
+    # valid options: cython, cffi, ctypes
+    "CHARM4PY_WRAPPER_TYPE":  "cython",
+}
 
 
-def check_cffi():
-    try:
-        import cffi
+class CharmBuilder(build_ext, object):
+    VALID_WRAPPERS = [ "cython", "cffi", "ctypes", ]
 
-        version = tuple(int(v) for v in cffi.__version__.split("."))
-        if version < (1, 7):
+    def __init__(self, *args):
+        self.set_config()
+        self.validate_config()
+        super().__init__(*args)
+
+    def run(self):
+        charm_version = self.find_charm(must_exist=False)
+        if charm_version:
+            log.info(f"Found charm version {charm_version}. Not building")
+            self.check_charm_version(charm_version)
+            return
+
+        self.build_libcharm()
+
+    def set_config(self):
+        global CONFIG_SETTINGS
+        self.__config__ = {
+            k : os.environ.get(k, v)
+            for k,v
+            in CONFIG_SETTINGS.items()
+        }
+
+    def __getitem__(self, key):
+        return self.__config__[key]
+
+    def validate_config(self):
+        assert self.wrapper_type in self.VALID_WRAPPERS, \
+            f"Unknown wrapper type: {self.wrapper_type}, choose from {self.VALID_WRAPPERS}"
+
+    @property
+    def charm_root(self):
+        return self["CHARM_ROOT"]
+
+    @property
+    def wrapper_type(self):
+        return self["CHARM4PY_WRAPPER_TYPE"]
+
+    @property
+    def build_opts(self):
+        return self["CHARM_BUILD_OPTS"]
+
+    @property
+    def numpy_enabled(self):
+        return self["NUMPY_ENABLED"]
+
+    def libcharm_filenames(self):
+        return {
+                "windows" : "charm.dll",
+                "darwin" : "libcharm.dylib",
+                "linux" : "libcharm.so",
+        }[sys.platform.lower()]
+
+    def libcharm_fullpath(self, prefix):
+        fname = self.libcharm_filenames()
+        return join_path(prefix, "lib", fname)
+
+    def find_charm(self, prefix = None, must_exist = False):
+        if prefix is None:
+            prefix = self.charm_root
+
+        library_path = self.libcharm_fullpath(prefix)
+        log.info(f"Looking for {library_path}")
+        try:
+            dll = ctypes.CDLL(library_path)
+            commit_id_str = ctypes.c_char_p.in_dll(dll, "CmiCommitID").value.decode()
+            version = [int(n) for n in commit_id_str.split("-")[0][1:].split(".")]
+            return tuple(version)
+        except:
+            pass
+
+        if must_exist:
+            raise DistutilsSetupError(f"Could not find libcharm. '{library_path}' does not exist")
+
+        return None
+
+    def check_charm_version(self, actual):
+        with open(os.path.join(os.getcwd(), "src", "charm4py", "libcharm_version"), "r") as f:
+            required = tuple(int(n) for n in f.read().split("."))
+
+        if actual < required:
+            req_str = ".".join([str(n) for n in actual])
+            cur_str = ".".join([str(n) for n in required])
             raise DistutilsSetupError(
-                "Charm4py requires cffi >= 1.7. "
-                "Installed version is " + cffi.__version__
-            )
-    except ImportError:
-        raise DistutilsSetupError("cffi is not installed")
-
-
-def build_libcharm(charm_src_dir, build_dir):
-
-    lib_output_dirs = []
-    charmrun_output_dirs = []
-    lib_output_dirs.append(os.path.join(build_dir, "charm4py", ".libs"))
-    lib_output_dirs.append(os.path.join(os.getcwd(), "charm4py", ".libs"))
-    charmrun_output_dirs.append(os.path.join(build_dir, "charmrun"))
-    charmrun_output_dirs.append(os.path.join(os.getcwd(), "charmrun"))
-    for output_dir in lib_output_dirs + charmrun_output_dirs:
-        distutils.dir_util.mkpath(output_dir)
-
-    if not os.path.exists(charm_src_dir) or not os.path.isdir(charm_src_dir):
-        raise DistutilsSetupError("charm sources dir " + charm_src_dir + " not found")
-
-    if not charm_built(charm_src_dir):
-
-        if system == "Windows" or system.lower().startswith("cygwin"):
-            raise DistutilsSetupError(
-                "Building charm++ from setup.py not currently supported on Windows."
-                " Please download a Charm4py binary wheel (64-bit Python required)"
+                "Charm++ version >= " + req_str + " required. "
+                "Existing version is " + cur_str
             )
 
-        if os.path.exists(os.path.join(charm_src_dir, "charm.tar.gz")):
-            log.info("Uncompressing charm.tar.gz...")
-            cmd = ["tar", "xf", "charm.tar.gz"]
-            p = subprocess.Popen(cmd, cwd=charm_src_dir, shell=False)
-            rc = p.wait()
-            if rc != 0:
-                raise DistutilsSetupError(
-                    "An error occured while building charm library"
-                )
+    def build_libcharm(self) :
+        source_archive = self["CHARM_SOURCE_ARCHIVE"]
+        if not os.path.exists(source_archive):
+            raise DistutilsSetupError(f"Source archive {source_archive} does not exist")
 
-        # divide by 2 to not hog the system. On systems with hyperthreading, this will likely
-        # result in using same # cores as physical cores (therefore not all the logical cores)
-        import multiprocessing
+        import tempfile
+        with tempfile.TemporaryDirectory() as build_dir:
+            log.info(f"Uncompressing {source_archive}")
+            subprocess.check_call([ "tar", "xf", source_archive])
 
-        build_num_cores = max(
-            int(
-                os.environ.get(
-                    "CHARM_BUILD_PROCESSES", multiprocessing.cpu_count() // 2
-                )
-            ),
-            1,
-        )
-        extra_build_opts = os.environ.get("CHARM_EXTRA_BUILD_OPTS", "")
-        if system == "Darwin":
-            if build_mpi:
-                cmd = (
-                    "./build charm4py mpi-darwin-x86_64 -j"
-                    + str(build_num_cores)
-                    + " --with-production "
-                    + extra_build_opts
-                )
-            else:
-                cmd = (
-                    "./build charm4py netlrts-darwin-x86_64 tcp -j"
-                    + str(build_num_cores)
-                    + " --with-production "
-                    + extra_build_opts
-                )
-        else:
-            try:
-                arch = os.uname()[4]
-            except:
-                arch = None
-            if arch is not None and arch.startswith("arm"):
-                import re
+            log.info(f"Building in {build_dir}")
+            subprocess.check_call(["./build", "charm4py", "--with-production" ])
 
-                regexp = re.compile("armv(\d+).*")
-                m = regexp.match(arch)
-                if m:
-                    version = int(m.group(1))
-                    if version < 8:
-                        cmd = (
-                            "./build charm4py netlrts-linux-arm7 tcp -j"
-                            + str(build_num_cores)
-                            + " --with-production "
-                            + extra_build_opts
-                        )
-                    else:
-                        cmd = (
-                            "./build charm4py netlrts-linux-arm8 tcp -j"
-                            + str(build_num_cores)
-                            + " --with-production "
-                            + extra_build_opts
-                        )
-                else:
-                    cmd = (
-                        "./build charm4py netlrts-linux-arm7 tcp -j"
-                        + str(build_num_cores)
-                        + " --with-production "
-                        + extra_build_opts
-                    )
-            elif arch == "ppc64le":
-                if build_mpi:
-                    cmd = (
-                        "./build charm4py mpi-linux-ppc64le -j"
-                        + str(build_num_cores)
-                        + " --with-production "
-                        + extra_build_opts
-                    )
-                else:
-                    cmd = (
-                        "./build charm4py netlrts-linux-ppc64le tcp -j"
-                        + str(build_num_cores)
-                        + " --with-production "
-                        + extra_build_opts
-                    )
-            else:
-                if build_mpi:
-                    cmd = (
-                        "./build charm4py mpi-linux-x86_64 -j"
-                        + str(build_num_cores)
-                        + " --with-production "
-                        + extra_build_opts
-                    )
-                else:
-                    cmd = (
-                        "./build charm4py netlrts-linux-x86_64 tcp -j"
-                        + str(build_num_cores)
-                        + " --with-production "
-                        + extra_build_opts
-                    )
-        p = subprocess.Popen(
-            cmd.rstrip().split(" "),
-            cwd=os.path.join(charm_src_dir, "charm"),
-            shell=False,
-        )
-        rc = p.wait()
-        if rc != 0:
-            raise DistutilsSetupError("An error occured while building charm library")
-
-        if system == "Darwin":
-            old_file_path = os.path.join(charm_src_dir, "charm", "lib", "libcharm.so")
-            new_file_path = os.path.join(
-                charm_src_dir, "charm", "lib", libcharm_filename
-            )
-            shutil.move(old_file_path, new_file_path)
-            cmd = [
-                "install_name_tool",
-                "-id",
-                "@rpath/../.libs/" + libcharm_filename,
-                new_file_path,
-            ]
-            p = subprocess.Popen(cmd, shell=False)
-            rc = p.wait()
-            if rc != 0:
-                raise DistutilsSetupError("install_name_tool error")
-
-    # verify that the version of charm++ that was built is same or greater than the
-    # one required by charm4py
-    check_libcharm_version(charm_src_dir)
-
-    # ---- copy libcharm ----
-    lib_src_path = os.path.join(charm_src_dir, "charm", "lib", libcharm_filename)
-    for output_dir in lib_output_dirs:
-        log.info(
-            "copying "
-            + os.path.relpath(lib_src_path)
-            + " to "
-            + os.path.relpath(output_dir)
-        )
-        shutil.copy(lib_src_path, output_dir)
-    if libcharm_filename2 is not None:
-        lib_src_path = os.path.join(charm_src_dir, "charm", "lib", libcharm_filename2)
-        for output_dir in lib_output_dirs:
-            log.info(
-                "copying "
-                + os.path.relpath(lib_src_path)
-                + " to "
-                + os.path.relpath(output_dir)
-            )
-            shutil.copy(lib_src_path, output_dir)
-
-    # ---- copy charmrun ----
-    charmrun_src_path = os.path.join(charm_src_dir, "charm", "bin", charmrun_filename)
-    for output_dir in charmrun_output_dirs:
-        log.info(
-            "copying "
-            + os.path.relpath(charmrun_src_path)
-            + " to "
-            + os.path.relpath(output_dir)
-        )
-        shutil.copy(charmrun_src_path, output_dir)
+            # verify that the version of charm++ that was built is same or greater than the
+            # one required by charm4py
+            built_version = self.find_charm(build_dir)
+            self.check_charm_version(built_version)
 
 
-class custom_install(install, object):
+# compile C-extension module (from cython)
+from Cython.Build import cythonize
 
-    user_options = install.user_options + [("mpi", None, "Build libcharm with MPI")]
+my_include_dirs = []
+my_lib_dirs = []
+extra_link_args = []
 
-    def initialize_options(self):
-        install.initialize_options(self)
-        self.mpi = False
+charmpp_dir = os.environ.get("CHARMPP_DIR", "charm_src/charm")
 
-    def finalize_options(self):
-        global build_mpi
-        if not build_mpi:
-            build_mpi = bool(self.mpi)
-        install.finalize_options(self)
+my_include_dirs += [
+    numpy.get_include(),
+    os.path.join(charmpp_dir, "include")]
+my_lib_dirs += [os.path.join(charmpp_dir, "lib")]
 
-    def run(self):
-        install.run(self)
-
-
-class custom_build_py(build_py, object):
-
-    user_options = build_py.user_options + [("mpi", None, "Build libcharm with MPI")]
-
-    def initialize_options(self):
-        build_py.initialize_options(self)
-        self.mpi = False
-
-    def finalize_options(self):
-        global build_mpi
-        if not build_mpi:
-            build_mpi = bool(self.mpi)
-        build_py.finalize_options(self)
-
-    def run(self):
-        if not self.dry_run:
-            build_libcharm(os.path.join(os.getcwd(), "charm_src"), self.build_lib)
-            shutil.copy(
-                os.path.join(os.getcwd(), "LICENSE"),
-                os.path.join(self.build_lib, "charm4py"),
-            )
-        super(custom_build_py, self).run()
-
-
-class custom_build_ext(build_ext, object):
-
-    user_options = build_ext.user_options + [("mpi", None, "Build libcharm with MPI")]
-
-    def initialize_options(self):
-        build_ext.initialize_options(self)
-        self.mpi = False
-
-    def finalize_options(self):
-        global build_mpi
-        if not build_mpi:
-            build_mpi = bool(self.mpi)
-        build_ext.finalize_options(self)
-
-    def run(self):
-        if not self.dry_run:
-            build_libcharm(os.path.join(os.getcwd(), "charm_src"), self.build_lib)
-        super(custom_build_ext, self).run()
-
-
-extensions = []
-py_impl = platform.python_implementation()
-
-if py_impl == "PyPy":
-    os.environ["CHARM4PY_BUILD_CFFI"] = "1"
-elif "CPY_WHEEL_BUILD_UNIVERSAL" not in os.environ:
-    # compile C-extension module (from cython)
-    from Cython.Build import cythonize
-
-    my_include_dirs = []
-    my_lib_dirs = []
-    extra_link_args = []
-
-    if "CHARMPP_DIR" in os.environ:
-        charmpp_dir = os.environ["CHARMPP_DIR"]
-    else:
-        charmpp_dir = "charm_src/charm"
-
-    my_include_dirs += [
-        numpy.get_include(),
-        os.path.join(charmpp_dir, "include")]
-    my_lib_dirs += [os.path.join(charmpp_dir, "lib")]
-
-    extensions.extend(
-        cythonize(
-            setuptools.Extension(
-                "charm4py.charmlib.charmlib_cython",
-                sources=["src/charm4py/charmlib/charmlib_cython.pyx"],
-                include_dirs=my_include_dirs,
-                library_dirs=my_lib_dirs,
-                libraries=["charm"],
-                extra_compile_args=["-g0", "-O3"],
-                extra_link_args=extra_link_args,
-            ),
-            build_dir="build",
-            compile_time_env={'HAVE_NUMPY': True},
-        )
-    )
-
-additional_setup_keywords = {}
-if os.environ.get("CHARM4PY_BUILD_CFFI") == "1":
-    check_cffi()
-    additional_setup_keywords["cffi_modules"] = (
-        "charm4py/charmlib/charmlib_cffi_build.py:ffibuilder"
+extension = cythonize(
+        setuptools.Extension(
+            "charm4py.charmlib.charmlib_cython",
+            sources=["src/charm4py/charmlib/charmlib_cython.pyx"],
+            include_dirs=my_include_dirs,
+            library_dirs=my_lib_dirs,
+            libraries=["charm"],
+            extra_compile_args=["-g0", "-O3"],
+            extra_link_args=extra_link_args,
+        ),
+        build_dir="build",
+        compile_time_env={'HAVE_NUMPY': True},
     )
 
 setuptools.setup(
-    ext_modules=extensions,
+    ext_modules=extension,
     cmdclass={
-        "build_py": custom_build_py,
-        "build_ext": custom_build_ext,
-        "install": custom_install,
+        "build_ext": CharmBuilder,
     },
-    **additional_setup_keywords
 )
