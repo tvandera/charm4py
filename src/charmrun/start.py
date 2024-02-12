@@ -75,7 +75,7 @@ def start(args=[]):
     if '++interactive' in args and 'charm4py.interactive' not in args:
         args += ['-m', 'charm4py.interactive']
 
-    cmd = [os.path.join(os.path.dirname(__file__), 'charmrun')]
+    cmd = ['charmrun']
     if executable_is_python(args):
         # Note: sys.executable is the absolute path to the Python interpreter
         # We only want to invoke the interpreter if the execution target is a
