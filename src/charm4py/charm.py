@@ -1083,6 +1083,24 @@ class CharmRemote(Chare):
             charm.registerInCharm(chare_type)
 
 
+def load_lib_charm(libcharm_path):
+    from sys import platform
+    libcharm = {
+      'windows' : 'charm.dll',
+      'darwin' : 'libcharm.dylib',
+      'linux' : 'libcharm.so',
+    }[platform.lower()]
+
+    # override libcharm_path arg
+    p = os.environ.get('LIBCHARM_PATH')
+    if p is not None: libcharm_path = p
+
+    if libcharm_path is not None:
+        libcharm = os.path.join(libcharm_path, libcharm)
+
+    import ctypes
+    return ctypes.CDLL(libcharm)
+
 def load_charm_library(charm):
     args = sys.argv
     libcharm_path = os.path.join(os.path.dirname(__file__), '.libs')
@@ -1097,6 +1115,7 @@ def load_charm_library(charm):
         elif interface == 'cffi':
             from .charmlib.charmlib_cffi import CharmLib
         elif interface == 'cython':
+            load_lib_charm(libcharm_path)
             from .charmlib.charmlib_cython import CharmLib
         else:
             raise Charm4PyError('Unrecognized interface ' + interface)
@@ -1106,6 +1125,7 @@ def load_charm_library(charm):
         py_impl = platform.python_implementation()
         if py_impl != 'PyPy':
             try:
+                load_lib_charm(libcharm_path)
                 from .charmlib.charmlib_cython import CharmLib
             except:
                 try:
