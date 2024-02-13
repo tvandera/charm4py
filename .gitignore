@@ -20,4 +20,5 @@ charmrun/charmrun
 
 # ignore macOS specific files
 .DS_STORE
+test_output
 
