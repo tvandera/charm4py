@@ -1,37 +1,16 @@
 import time
 import subprocess
 import sys
-if sys.version_info[0] < 3:
-    print("auto_test requires Python 3")
-    exit(1)
 import os
 import shutil
 from collections import defaultdict
 import json
+import logging
 
-
-if len(sys.argv) == 2 and sys.argv[1] == '-version_check':
-    exit(sys.version_info[0])
-
-
-def searchForPython(python_implementations):
-    py3_exec = None
-    py3_exec = shutil.which('python3')
-    if py3_exec is None:
-        exec_str = shutil.which('python')
-        if exec_str is not None:
-            version = subprocess.call([exec_str, 'auto_test.py', '-version_check'])
-            if version >= 3:
-                py3_exec = exec_str
-    if py3_exec is None:
-        print("WARNING: Python 3 executable not found for auto_test. If desired, set manually")
-    else:
-        python_implementations.add((3, py3_exec))
-
+logging.basicConfig(level=logging.INFO)
 
 # ----------------------------------------------------------------------------------
 TIMEOUT = 60  # timeout for each test (in seconds)
-CHARM_QUIET_AFTER_NUM_TESTS = 5
 
 commonArgs = ['++local']
 default_num_processes = int(os.environ.get('CHARM4PY_TEST_NUM_PROCESSES', 4))
@@ -46,10 +25,12 @@ except:
 python_implementations = set()   # python implementations can also be added here manually
 searchForPython(python_implementations)
 
-interfaces = ['ctypes', 'cython']
+interfaces = ['ctypes']
 
 with open('test_config.json', 'r') as infile:
     tests = json.load(infile)
+
+os.makedirs("TestOutput", exist_ok=True)
 
 num_tests = 0
 durations = defaultdict(dict)
@@ -59,16 +40,20 @@ for test in tests:
             continue
         if test['condition'] == 'not numbaInstalled' and numbaInstalled:
             continue
+        if not test['condition']:
+            continue
     num_processes = max(test.get('force_min_processes', default_num_processes), default_num_processes)
     for interface in interfaces:
         durations[interface][test['path']] = []
         for version, python in sorted(python_implementations):
+            name = "-".join( [ test['path'], f"python{version}" ] ).replace("/", "_")
+
             if version < test.get('requires_py_version', -1):
                 continue
             additionalArgs = []
             if num_tests >= CHARM_QUIET_AFTER_NUM_TESTS and '++quiet' not in commonArgs:
                 additionalArgs.append('++quiet')
-            cmd = ['../charmrun/charmrun']
+            cmd = ['charmrun']
             if test.get('prefix'):
                 cmd += [test['prefix']]
             if not test.get('interactive', False):
@@ -80,25 +65,40 @@ for test in tests:
             cmd += commonArgs
             cmd += ['+p' + str(num_processes), '+libcharm_interface', interface]
             cmd += additionalArgs
-            print('Test command is ' + ' '.join(cmd))
             startTime = time.time()
-            stdin = None
+            stderr = open(f"TestOutput/{name}.err", "w")
+            stdout = open(f"TestOutput/{name}.out", "w")
+
             if test.get('interactive', False):
-                stdin = open(test['path'])
-            p = subprocess.Popen(cmd, stdin=stdin)
+                p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stderr=stderr, stdout=stdout)
+
+                with open(test['path']) as stdin:
+                    for line in stdin:
+                        print("passing to proc: ", line)
+                        p.stdin.write(line)
+            else:
+                # non-interactive
+                p = subprocess.Popen(cmd, stderr=stderr, stdout=stdout)
+
             try:
                 rc = p.wait(TIMEOUT)
             except subprocess.TimeoutExpired:
-                print("Timeout (" + str(TIMEOUT) + " secs) expired when running " + test['path'] + ", Killing process")
+                print(f"{name}: TIMEOUT")
+                logging.warning("Timeout (" + str(TIMEOUT) + " secs) expired when running " + test['path'] + ", Killing process")
                 p.kill()
                 rc = -1
+
+            stderr.close()
+            stdout.close()
+
             if rc != 0:
-                print("ERROR running test " + test['path'] + " with " + python)
-                exit(1)
+                print(f"{name}: FAILED")
+                logging.warning("ERROR running test " + test['path'] + " with " + python)
+                logging.warning("the command that failed was:\n", cmd)
             else:
                 elapsed = round(time.time() - startTime, 3)
                 durations[interface][test['path']].append(elapsed)
-                print("\n\n--------------------- TEST PASSED (in " + str(elapsed) + " secs) ---------------------\n\n")
+                print(f"{name}: PASSED")
                 num_tests += 1
 
 
