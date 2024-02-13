@@ -28,11 +28,14 @@ def is_enabled(test):
 
 
 def run_test(name, cmd):
-    with open(f"TestOutput/{name}.err", "w") as stderr, \
-         open(f"TestOutput/{name}.out", "w") as stdout:
+    error_file = f"TestOutput/{name}.err"
+    output_file = f"TestOutput/{name}.out"
 
-        logging.debug("Command:\n%s", " ".join(cmd))
+    logging.debug("Command:\n%s", " ".join(cmd))
+    logging.debug("output log in: %s", output_file)
+    logging.debug("errror log in: %s", error_file)
 
+    with open(output_file, "w") as stderr, open(error_file, "w") as stdout:
         try:
             subprocess.check_call(cmd, stderr=stderr, stdout=stdout, timeout=TIMEOUT)
         except subprocess.TimeoutExpired:
@@ -48,7 +51,7 @@ try:
 except:
     numbaInstalled = False
 
-interfaces = ['ctypes']
+interfaces = ['ctypes', 'cython']
 
 with open('test_config.json', 'r') as infile:
     tests = json.load(infile)
