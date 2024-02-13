@@ -67,6 +67,11 @@ def checkNodeListLocal(args):
 def start(args=[]):
     import subprocess
 
+    if os.environ.get("IN_PYCHARMRUN", '0') == '1':
+        raise RecursionError("Recursive call of charmrun.start")
+
+    os.environ["IN_PYCHARMRUN"] = '1'
+
     if len(args) == 0:
         args = sys.argv[1:]
     if '++local' not in args and '++mpiexec' not in args and checkNodeListLocal(args):

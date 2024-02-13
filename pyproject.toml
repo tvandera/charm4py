@@ -35,7 +35,7 @@ dependencies = [
 ]
 
 [project.scripts]
-charmrun = "charmrun.start:start"
+pycharmrun = "charmrun.start:start"
 
 [project.urls]
 Homepage  = 'https://github.com/UIUC-PPL/charm4py'
