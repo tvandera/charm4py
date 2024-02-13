@@ -51,9 +51,12 @@ class CharmBuilder(build_ext, object):
         if charm_version:
             log.info(f"Found charm version {charm_version}. Not building")
             self.check_charm_version(charm_version)
-            return
+        else:
+            log.info(f"Building charm in tree")
+            self.build_libcharm()
 
-        self.build_libcharm()
+        log.info("Now building extension")
+        super().run()
 
     def set_config(self):
         global CONFIG_SETTINGS
@@ -121,11 +124,8 @@ class CharmBuilder(build_ext, object):
             required = tuple(int(n) for n in f.read().split("."))
 
         if actual < required:
-            req_str = ".".join([str(n) for n in actual])
-            cur_str = ".".join([str(n) for n in required])
             raise DistutilsSetupError(
-                "Charm++ version >= " + req_str + " required. "
-                "Existing version is " + cur_str
+                f"Charm++ version >= {required} required. Existing version is {actual}"
             )
 
     def build_libcharm(self) :
