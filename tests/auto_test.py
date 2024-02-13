@@ -1,21 +1,29 @@
-import time
 import subprocess
 import sys
 import os
-import shutil
-from collections import defaultdict
 import json
 import logging
+from itertools import product
 
 logging.basicConfig(level=logging.INFO)
 
 # ----------------------------------------------------------------------------------
+NUM_PARALLEL = 12
 TIMEOUT = 60  # timeout for each test (in seconds)
-
-commonArgs = ['++local']
-default_num_processes = int(os.environ.get('CHARM4PY_TEST_NUM_PROCESSES', 4))
+COMMON_ARGS = ['++local']
+DEFAULT_NPROCS = int(os.environ.get('CHARM4PY_TEST_NUM_PROCESSES', 4))
+INTERFACES = ['ctypes', 'cython']
+CONFIG_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_config.json")
+with open(CONFIG_FILE, 'r') as infile:
+        ALL_TESTS = json.load(infile)
 
 def is_enabled(test):
+    try:
+        import numba
+        numbaInstalled = True
+    except:
+        numbaInstalled = False
+
     if 'condition' in test:
         if test['condition'] == 'numbaInstalled' and not numbaInstalled:
             return False
@@ -26,10 +34,24 @@ def is_enabled(test):
 
     return True
 
+def test_run(name, interface):
+    fullname = test['name'].replace("/", "_") + '-' + interface
 
-def run_test(name, cmd):
-    error_file = f"TestOutput/{name}.err"
-    output_file = f"TestOutput/{name}.out"
+    charmrun = 'charmrun'
+    prefix = test.get('prefix') # extra args before 'python'
+    python = sys.executable  # python interpreter path
+    path = test['path'] # .py test file
+    args = test.get('args', '').split(' ') + COMMON_ARGS
+    nproc = str(max(test.get('force_min_processes', DEFAULT_NPROCS), DEFAULT_NPROCS))
+
+    cmd = [ charmrun, prefix, python, path ] + args + [ '+p', nproc, '+libcharm_interface', interface ]
+
+    # remove empty strings from list
+    cmd = [ arg for arg in cmd if arg ]
+
+    os.makedirs("test_output", exist_ok=True)
+    error_file = f"test_output/{fullname}.err"
+    output_file = f"test_output/{fullname}.out"
 
     logging.debug("Command:\n%s", " ".join(cmd))
     logging.debug("output log in: %s", output_file)
@@ -39,39 +61,27 @@ def run_test(name, cmd):
         try:
             subprocess.check_call(cmd, stderr=stderr, stdout=stdout, timeout=TIMEOUT)
         except subprocess.TimeoutExpired:
-            print(f"{name}: TIMEOUT")
+            print(f"{fullname}: TIMEOUT")
         except subprocess.CalledProcessError:
-            print(f"{name}: FAILED")
+            print(f"{fullname}: FAILED")
         else:
-            print(f"{name}: PASSED")
+            print(f"{fullname}: PASSED")
 
-try:
-    import numba
-    numbaInstalled = True
-except:
-    numbaInstalled = False
 
-interfaces = ['ctypes', 'cython']
+def all_runs():
+    tests = [ t["path"] for t in ALL_TESTS if is_enabled(t) ]
+    runs = product(tests, INTERFACES)
+    return runs
 
-with open('test_config.json', 'r') as infile:
-    tests = json.load(infile)
+def pytest_generate_tests(metafunc):
+    metafunc.parametrize("name,interface", all_runs())
 
-os.makedirs("TestOutput", exist_ok=True)
+def main():
+    runs = all_runs()
 
-python = sys.executable
+    from multiprocessing import Pool
+    with Pool(NUM_PARALLEL) as p:
+        p.starmap(test_run, runs)
 
-tests = [ t for t in tests if is_enabled(t) ]
-for test in tests:
-    nproc = max(test.get('force_min_processes', default_num_processes), default_num_processes)
-    for interface in interfaces:
-        name = test['path'].replace("/", "_") + '-' + interface
-
-        cmd = [ 'charmrun', test.get('prefix', ''), python, test['path'], ] \
-            + test.get('args', '').split(' ') \
-            + commonArgs \
-            + [ '+p', str(nproc), '+libcharm_interface', interface ]
-
-        cmd = [ arg for arg in cmd if arg ]
-
-        run_test(name, cmd)
-
+if __name__ == "__main__":
+    main()
