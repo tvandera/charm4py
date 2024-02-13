@@ -1,301 +1,301 @@
-[
-     {
-         "condition" : false,
-         "force_min_processes": 4,
-         "path": "interactive/test1.in",
-         "interactive": true,
-         "requires_py_version": 3
-     },
-    {
-        "force_min_processes": 4,
-        "path": "entry_methods/array_element_proxy.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "entry_methods/group_element_proxy.py"
-    },
-    {
-        "force_min_processes": 2,
-        "path": "entry_methods/entrymethod_args_kwargs.py"
-    },
-    {
-        "path": "entry_methods/bcast_globals.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "entry_methods/retmodes.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "pool/pool.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "pool/pool_ncores.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "charm_remote.py",
-        "requires_py_version": 3
-    },
-    {
-        "force_min_processes": 4,
-        "path": "array_maps/test1.py"
-    },
-    {
-        "path": "when/test_when_syntax.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "when/when_test.py"
-    },
-    {
-        "path": "when/when_test2.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "when/stencil.py"
-    },
-    {
-        "path": "reductions/group_reduction.py"
-    },
-    {
-        "path": "reductions/array_reduction.py"
-    },
-    {
-        "path": "reductions/section_reduction.py"
-    },
-    {
-        "path": "reductions/custom_reduction.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "reductions/logical_ops.py"
-    },
-    {
-        "path": "reductions/test_gather.py"
-    },
-    {
-        "path": "reductions/future_reduction.py"
-    },
-    {
-        "path": "reductions/bench_reductions.py"
-    },
-    {
-        "path": "reductions/allreduce.py"
-    },
-    {
-        "path": "dcopy/test_dcopy.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "callbacks/callbacks.py",
-        "requires_py_version": 3
-    },
-    {
-        "force_min_processes": 4,
-        "path": "callbacks/schedule_cb.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "collections/test.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "collections/async_array_creation.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "collections/proxies_same_name.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "collections/proxy_eq.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "exceptions/test.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "exceptions/pool.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "topo/topo_treeAPI.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "topo/topo_treeAPI2.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "topo/phynode_API.py"
-    },
-    {
-        "path": "migration/test_migrate.py",
-        "args": "+balancer GreedyRefineLB +LBDebug 1"
-    },
-    {
-        "path": "migration/test_nonmigratables.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "migration/chare_migration.py"
-    },
-    {
-        "path": "thread_entry_methods/test1.py"
-    },
-    {
-        "path": "thread_entry_methods/test2.py"
-    },
-    {
-        "path": "thread_entry_methods/test1_when.py"
-    },
-    {
-        "path": "thread_entry_methods/test_main.py"
-    },
-    {
-        "path": "thread_entry_methods/future_reduction.py"
-    },
-    {
-        "path": "thread_entry_methods/future_bcast.py"
-    },
-    {
-        "path": "thread_entry_methods/test_wait.py"
-    },
-    {
-        "path": "thread_entry_methods/threaded_ctors1.py"
-    },
-    {
-        "path": "thread_entry_methods/threaded_ctors2.py"
-    },
-    {
-        "path": "futures/test_futures.py"
-    },
-    {
-        "path": "futures/test_different_coroutines.py"
-    },
-    {
-        "path": "futures/multi_futures.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "futures/iwait.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "channels/test1.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "channels/test2.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "channels/test_numpy.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "channels/inorder.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "channels/iwait.py"
-    },
-    {
-        "force_min_processes": 2,
-        "path": "qd/qd.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "sections/simple.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "sections/slice.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "sections/callbacks.py",
-        "requires_py_version": 3
-    },
-    {
-        "force_min_processes": 4,
-        "path": "sections/multirand-split-combine.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "sections/constrained_groups.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "sections/allreduce.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "examples/dist-task-scheduler/scheduler.py"
-    },
-    {
-        "condition": "numbaInstalled",
-        "force_min_processes": 4,
-        "path": "examples/fibonacci/fib-numba.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "examples/fibonacci/fib.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "examples/hello/group_hello.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "examples/hello/array_hello.py"
-    },
-    {
-        "path": "examples/jacobi/jacobi2d.py",
-        "args": "128 32"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "examples/multi-module/main.py"
-    },
-    {
-        "force_min_processes": 4,
-        "path": "examples/nqueen/nqueen.py"
-    },
-    {
-        "condition": "numbaInstalled",
-        "force_min_processes": 4,
-        "path": "examples/nqueen/nqueen-numba.py"
-    },
-    {
-        "path": "examples/parallel-map/square.py"
-    },
-    {
-        "path": "examples/particle/particle.py",
-        "args": "8 4 2500 +balancer GreedyRefineLB"
-    },
-    {
-        "path": "examples/simple/start.py"
-    },
-    {
-        "path": "examples/simple/chares.py"
-    },
-    {
-        "path": "examples/simple/reduction.py"
-    },
-    {
-        "path": "examples/simple/hello_world.py"
-    },
-    {
-        "prefix": "exec.sh",
-        "path": "examples/simple/hello_world.py"
-    },
-    {
-        "condition": "numbaInstalled",
-        "path": "examples/wave2d/wave2d.py",
-        "args": "300 -1 --NO-RENDER"
-    }
-]
+{
+  "0-interactive/test1.in": {
+    "condition": false,
+    "force_min_processes": 4,
+    "path": "interactive/test1.in",
+    "interactive": true,
+    "requires_py_version": 3
+  },
+  "1-entry_methods/array_element_proxy.py": {
+    "force_min_processes": 4,
+    "path": "entry_methods/array_element_proxy.py"
+  },
+  "2-entry_methods/group_element_proxy.py": {
+    "force_min_processes": 4,
+    "path": "entry_methods/group_element_proxy.py"
+  },
+  "3-entry_methods/entrymethod_args_kwargs.py": {
+    "force_min_processes": 2,
+    "path": "entry_methods/entrymethod_args_kwargs.py"
+  },
+  "4-entry_methods/bcast_globals.py": {
+    "path": "entry_methods/bcast_globals.py"
+  },
+  "5-entry_methods/retmodes.py": {
+    "force_min_processes": 4,
+    "path": "entry_methods/retmodes.py"
+  },
+  "6-pool/pool.py": {
+    "force_min_processes": 4,
+    "path": "pool/pool.py"
+  },
+  "7-pool/pool_ncores.py": {
+    "force_min_processes": 4,
+    "path": "pool/pool_ncores.py"
+  },
+  "8-charm_remote.py": {
+    "force_min_processes": 4,
+    "path": "charm_remote.py",
+    "requires_py_version": 3
+  },
+  "9-array_maps/test1.py": {
+    "force_min_processes": 4,
+    "path": "array_maps/test1.py"
+  },
+  "10-when/test_when_syntax.py": {
+    "path": "when/test_when_syntax.py"
+  },
+  "11-when/when_test.py": {
+    "force_min_processes": 4,
+    "path": "when/when_test.py"
+  },
+  "12-when/when_test2.py": {
+    "path": "when/when_test2.py"
+  },
+  "13-when/stencil.py": {
+    "force_min_processes": 4,
+    "path": "when/stencil.py"
+  },
+  "14-reductions/group_reduction.py": {
+    "path": "reductions/group_reduction.py"
+  },
+  "15-reductions/array_reduction.py": {
+    "path": "reductions/array_reduction.py"
+  },
+  "16-reductions/section_reduction.py": {
+    "path": "reductions/section_reduction.py"
+  },
+  "17-reductions/custom_reduction.py": {
+    "path": "reductions/custom_reduction.py"
+  },
+  "18-reductions/logical_ops.py": {
+    "force_min_processes": 4,
+    "path": "reductions/logical_ops.py"
+  },
+  "19-reductions/test_gather.py": {
+    "path": "reductions/test_gather.py"
+  },
+  "20-reductions/future_reduction.py": {
+    "path": "reductions/future_reduction.py"
+  },
+  "21-reductions/bench_reductions.py": {
+    "path": "reductions/bench_reductions.py"
+  },
+  "22-reductions/allreduce.py": {
+    "path": "reductions/allreduce.py"
+  },
+  "23-dcopy/test_dcopy.py": {
+    "path": "dcopy/test_dcopy.py"
+  },
+  "24-callbacks/callbacks.py": {
+    "force_min_processes": 4,
+    "path": "callbacks/callbacks.py",
+    "requires_py_version": 3
+  },
+  "25-callbacks/schedule_cb.py": {
+    "force_min_processes": 4,
+    "path": "callbacks/schedule_cb.py"
+  },
+  "26-collections/test.py": {
+    "force_min_processes": 4,
+    "path": "collections/test.py"
+  },
+  "27-collections/async_array_creation.py": {
+    "force_min_processes": 4,
+    "path": "collections/async_array_creation.py"
+  },
+  "28-collections/proxies_same_name.py": {
+    "force_min_processes": 4,
+    "path": "collections/proxies_same_name.py"
+  },
+  "29-collections/proxy_eq.py": {
+    "force_min_processes": 4,
+    "path": "collections/proxy_eq.py"
+  },
+  "30-exceptions/test.py": {
+    "force_min_processes": 4,
+    "path": "exceptions/test.py"
+  },
+  "31-exceptions/pool.py": {
+    "force_min_processes": 4,
+    "path": "exceptions/pool.py"
+  },
+  "32-topo/topo_treeAPI.py": {
+    "force_min_processes": 4,
+    "path": "topo/topo_treeAPI.py"
+  },
+  "33-topo/topo_treeAPI2.py": {
+    "force_min_processes": 4,
+    "path": "topo/topo_treeAPI2.py"
+  },
+  "34-topo/phynode_API.py": {
+    "force_min_processes": 4,
+    "path": "topo/phynode_API.py"
+  },
+  "35-migration/test_migrate.py": {
+    "path": "migration/test_migrate.py",
+    "args": "+balancer GreedyRefineLB +LBDebug 1"
+  },
+  "36-migration/test_nonmigratables.py": {
+    "path": "migration/test_nonmigratables.py"
+  },
+  "37-migration/chare_migration.py": {
+    "force_min_processes": 4,
+    "path": "migration/chare_migration.py"
+  },
+  "38-thread_entry_methods/test1.py": {
+    "path": "thread_entry_methods/test1.py"
+  },
+  "39-thread_entry_methods/test2.py": {
+    "path": "thread_entry_methods/test2.py"
+  },
+  "40-thread_entry_methods/test1_when.py": {
+    "path": "thread_entry_methods/test1_when.py"
+  },
+  "41-thread_entry_methods/test_main.py": {
+    "path": "thread_entry_methods/test_main.py"
+  },
+  "42-thread_entry_methods/future_reduction.py": {
+    "path": "thread_entry_methods/future_reduction.py"
+  },
+  "43-thread_entry_methods/future_bcast.py": {
+    "path": "thread_entry_methods/future_bcast.py"
+  },
+  "44-thread_entry_methods/test_wait.py": {
+    "path": "thread_entry_methods/test_wait.py"
+  },
+  "45-thread_entry_methods/threaded_ctors1.py": {
+    "path": "thread_entry_methods/threaded_ctors1.py"
+  },
+  "46-thread_entry_methods/threaded_ctors2.py": {
+    "path": "thread_entry_methods/threaded_ctors2.py"
+  },
+  "47-futures/test_futures.py": {
+    "path": "futures/test_futures.py"
+  },
+  "48-futures/test_different_coroutines.py": {
+    "path": "futures/test_different_coroutines.py"
+  },
+  "49-futures/multi_futures.py": {
+    "path": "futures/multi_futures.py"
+  },
+  "50-futures/iwait.py": {
+    "force_min_processes": 4,
+    "path": "futures/iwait.py"
+  },
+  "51-channels/test1.py": {
+    "force_min_processes": 4,
+    "path": "channels/test1.py"
+  },
+  "52-channels/test2.py": {
+    "force_min_processes": 4,
+    "path": "channels/test2.py"
+  },
+  "53-channels/test_numpy.py": {
+    "force_min_processes": 4,
+    "path": "channels/test_numpy.py"
+  },
+  "54-channels/inorder.py": {
+    "force_min_processes": 4,
+    "path": "channels/inorder.py"
+  },
+  "55-channels/iwait.py": {
+    "force_min_processes": 4,
+    "path": "channels/iwait.py"
+  },
+  "56-qd/qd.py": {
+    "force_min_processes": 2,
+    "path": "qd/qd.py"
+  },
+  "57-sections/simple.py": {
+    "force_min_processes": 4,
+    "path": "sections/simple.py"
+  },
+  "58-sections/slice.py": {
+    "force_min_processes": 4,
+    "path": "sections/slice.py"
+  },
+  "59-sections/callbacks.py": {
+    "force_min_processes": 4,
+    "path": "sections/callbacks.py",
+    "requires_py_version": 3
+  },
+  "60-sections/multirand-split-combine.py": {
+    "force_min_processes": 4,
+    "path": "sections/multirand-split-combine.py"
+  },
+  "61-sections/constrained_groups.py": {
+    "force_min_processes": 4,
+    "path": "sections/constrained_groups.py"
+  },
+  "62-sections/allreduce.py": {
+    "force_min_processes": 4,
+    "path": "sections/allreduce.py"
+  },
+  "63-examples/dist-task-scheduler/scheduler.py": {
+    "force_min_processes": 4,
+    "path": "examples/dist-task-scheduler/scheduler.py"
+  },
+  "64-examples/fibonacci/fib-numba.py": {
+    "condition": "numbaInstalled",
+    "force_min_processes": 4,
+    "path": "examples/fibonacci/fib-numba.py"
+  },
+  "65-examples/fibonacci/fib.py": {
+    "force_min_processes": 4,
+    "path": "examples/fibonacci/fib.py"
+  },
+  "66-examples/hello/group_hello.py": {
+    "force_min_processes": 4,
+    "path": "examples/hello/group_hello.py"
+  },
+  "67-examples/hello/array_hello.py": {
+    "force_min_processes": 4,
+    "path": "examples/hello/array_hello.py"
+  },
+  "68-examples/jacobi/jacobi2d.py": {
+    "path": "examples/jacobi/jacobi2d.py",
+    "args": "128 32"
+  },
+  "69-examples/multi-module/main.py": {
+    "force_min_processes": 4,
+    "path": "examples/multi-module/main.py"
+  },
+  "70-examples/nqueen/nqueen.py": {
+    "force_min_processes": 4,
+    "path": "examples/nqueen/nqueen.py"
+  },
+  "71-examples/nqueen/nqueen-numba.py": {
+    "condition": "numbaInstalled",
+    "force_min_processes": 4,
+    "path": "examples/nqueen/nqueen-numba.py"
+  },
+  "72-examples/parallel-map/square.py": {
+    "path": "examples/parallel-map/square.py"
+  },
+  "73-examples/particle/particle.py": {
+    "path": "examples/particle/particle.py",
+    "args": "8 4 2500 +balancer GreedyRefineLB"
+  },
+  "74-examples/simple/start.py": {
+    "path": "examples/simple/start.py"
+  },
+  "75-examples/simple/chares.py": {
+    "path": "examples/simple/chares.py"
+  },
+  "76-examples/simple/reduction.py": {
+    "path": "examples/simple/reduction.py"
+  },
+  "77-examples/simple/hello_world.py": {
+    "path": "examples/simple/hello_world.py"
+  },
+  "78-examples/simple/hello_world.py": {
+    "prefix": "exec.sh",
+    "path": "examples/simple/hello_world.py"
+  },
+  "79-examples/wave2d/wave2d.py": {
+    "condition": "numbaInstalled",
+    "path": "examples/wave2d/wave2d.py",
+    "args": "300 -1 --NO-RENDER"
+  }
+}

@@ -35,7 +35,8 @@ def is_enabled(test):
     return True
 
 def test_run(name, interface):
-    fullname = test['name'].replace("/", "_") + '-' + interface
+    test = ALL_TESTS[name]
+    fullname = name.replace("/", "_") + '-' + interface
 
     charmrun = 'charmrun'
     prefix = test.get('prefix') # extra args before 'python'
@@ -69,8 +70,8 @@ def test_run(name, interface):
 
 
 def all_runs():
-    tests = [ t["path"] for t in ALL_TESTS if is_enabled(t) ]
-    runs = product(tests, INTERFACES)
+    names = [ name for name,config in ALL_TESTS.items() if is_enabled(config) ]
+    runs = product(names, INTERFACES)
     return runs
 
 def pytest_generate_tests(metafunc):
