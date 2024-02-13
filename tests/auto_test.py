@@ -64,7 +64,7 @@ tests = [ t for t in tests if is_enabled(t) ]
 for test in tests:
     nproc = max(test.get('force_min_processes', default_num_processes), default_num_processes)
     for interface in interfaces:
-        name = test['path'].replace("/", "_")
+        name = test['path'].replace("/", "_") + '-' + interface
 
         cmd = [ 'charmrun', test.get('prefix', ''), python, test['path'], ] \
             + test.get('args', '').split(' ') \
