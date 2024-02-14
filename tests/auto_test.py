@@ -59,14 +59,17 @@ def test_run(name, interface):
     logging.debug("errror log in: %s", error_file)
 
     with open(output_file, "w") as stderr, open(error_file, "w") as stdout:
-        try:
-            subprocess.check_call(cmd, stderr=stderr, stdout=stdout, timeout=TIMEOUT)
-        except subprocess.TimeoutExpired:
-            print(f"{fullname}: TIMEOUT")
-        except subprocess.CalledProcessError:
-            print(f"{fullname}: FAILED")
-        else:
-            print(f"{fullname}: PASSED")
+        subprocess.check_call(cmd, stderr=stderr, stdout=stdout, timeout=TIMEOUT)
+
+def run_and_catch(name, interface):
+    try:
+        test_run(name, interface)
+    except subprocess.TimeoutExpired:
+        print(f"{name}: TIMEOUT")
+    except subprocess.CalledProcessError:
+        print(f"{name}: FAILED")
+    else:
+        print(f"{name}: PASSED")
 
 
 def all_runs():
@@ -82,7 +85,7 @@ def main():
 
     from multiprocessing import Pool
     with Pool(NUM_PARALLEL) as p:
-        p.starmap(test_run, runs)
+        p.starmap(run_and_catch, runs)
 
 if __name__ == "__main__":
     main()
