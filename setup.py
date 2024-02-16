@@ -1,5 +1,6 @@
 import sys
 import os
+from glob import iglob
 from os.path import join as join_path
 import subprocess
 import setuptools
@@ -8,7 +9,6 @@ from setuptools.command.build_py import build_py
 from setuptools.command.install import install
 from distutils.errors import DistutilsSetupError
 from distutils import log
-import distutils
 import numpy
 
 import ctypes
@@ -113,24 +113,41 @@ class CharmBuilder(build_ext, object):
         if prefix is None:
             prefix = self.charm_root
 
+        if prefix is None:
+            return None
+
         library_path = self.libcharm_fullpath(prefix)
         log.info(f"Looking for {library_path}")
         try:
             dll = ctypes.CDLL(library_path)
             commit_id_str = ctypes.c_char_p.in_dll(dll, "CmiCommitID").value.decode()
-            version = [int(n) for n in commit_id_str.split("-")[0][1:].split(".")]
-            return tuple(version)
+            version = tuple([int(n) for n in commit_id_str.split("-")[0][1:].split(".")])
         except:
-            pass
+            if must_exist:
+                raise DistutilsSetupError(f"Could not find libcharm. '{library_path}' does not exist")
 
-        if must_exist:
-            raise DistutilsSetupError(f"Could not find libcharm. '{library_path}' does not exist")
+            return None
 
-        return None
+        if len(version) == 1 and version[0] >= 10000:
+            v, = version
+            version = ( v // 10000, (v // 100) % 100, v % 100 )
 
-    def check_charm_version(self, actual):
+        log.info(f"Found charm version {version}")
+        self.validate_charm_version(version)
+
+        self.include_dirs.append(join_path(prefix, 'include'))
+        self.library_dirs.append(join_path(prefix, 'lib'))
+        self.extra_link_args.append("-Wl,-rpath," + join_path(prefix, 'lib'))
+        self.libraries.append('charm')
+
+        return version
+
+    def validate_charm_version(self, actual):
+        assert len(actual) >= 3, f"Invalid version format for actual: {actual}"
         with open(os.path.join(os.getcwd(), "src", "charm4py", "libcharm_version"), "r") as f:
             required = tuple(int(n) for n in f.read().split("."))
+
+        log.info(f"Charm++ version >= {required} required. Existing version is {actual}")
 
         if actual < required:
             raise DistutilsSetupError(
@@ -142,43 +159,34 @@ class CharmBuilder(build_ext, object):
         if not os.path.exists(source_archive):
             raise DistutilsSetupError(f"Source archive {source_archive} does not exist")
 
-        import tempfile
-        with tempfile.TemporaryDirectory() as build_dir:
-            log.info(f"Uncompressing {source_archive}")
-            subprocess.check_call([ "tar", "xf", source_archive])
+        stage_dir = self.build_lib
+        log.info(f"Uncompressing {source_archive} in {stage_dir}")
+        subprocess.check_call([ "tar", "xf", source_archive], cwd=stage_dir)
 
-            log.info(f"Building in {build_dir}")
-            subprocess.check_call(["./build", "charm4py", "--with-production" ])
+        build_dir = next(iglob(join_path(stage_dir, "charm*")))
+        log.info(f"Building in {build_dir}")
+        build_cmd = ["./build", "charm4py", self.build_triplet ] + self.build_opts
+        log.info(f"Build cmd {build_cmd}")
+        subprocess.check_call(build_cmd, cwd=build_dir)
 
-            # verify that the version of charm++ that was built is same or greater than the
-            # one required by charm4py
-            built_version = self.find_charm(build_dir)
-            self.check_charm_version(built_version)
+        # verify that the version of charm++ that was built is same or greater than the
+        # one required by charm4py
+        built_version = self.find_charm(build_dir, must_exist=True)
+        self.validate_charm_version(built_version)
 
 
 # compile C-extension module (from cython)
 from Cython.Build import cythonize
 
-my_include_dirs = []
-my_lib_dirs = []
-extra_link_args = []
-
-charmpp_dir = os.environ.get("CHARMPP_DIR", "charm_src/charm")
-
-my_include_dirs += [
-    numpy.get_include(),
-    os.path.join(charmpp_dir, "include")]
-my_lib_dirs += [os.path.join(charmpp_dir, "lib")]
-
 extension = cythonize(
         setuptools.Extension(
             "charm4py.charmlib.charmlib_cython",
             sources=["src/charm4py/charmlib/charmlib_cython.pyx"],
-            include_dirs=my_include_dirs,
-            library_dirs=my_lib_dirs,
-            libraries=["charm"],
+            include_dirs = [ numpy.get_include() ],
+            library_dirs = [],
+            libraries = [],
             extra_compile_args=["-g0", "-O3"],
-            extra_link_args=extra_link_args,
+            extra_link_args= [],
         ),
         build_dir="build",
         compile_time_env={'HAVE_NUMPY': True},
