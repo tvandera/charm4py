@@ -58,13 +58,23 @@ class CharmBuilder(build_ext, object):
         log.info("Now building extension")
         super().run()
 
-    def set_config(self):
-        global CONFIG_SETTINGS
-        self.__config__ = {
-            k : os.environ.get(k, v)
-            for k,v
-            in CONFIG_SETTINGS.items()
-        }
+    def determin_triplet(self):
+        if self.build_triplet is not None:
+            return
+
+        import platform
+        comm = "netlrts" # always netlrts (aka tcp)
+        system = {
+            "Darwin" : "darwin",
+            "Linux" : "linux",
+            "Windows" : "win",
+        }[platform.system()]
+        arch =  {
+            "arm64" : "arm8",
+            "AMD64" : "x86_64",
+        }[platform.machine()]
+
+        self.build_triplet = "-".join((comm, system, arch))
 
     def __getitem__(self, key):
         return self.__config__[key]
