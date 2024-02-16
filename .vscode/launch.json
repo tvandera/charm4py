@@ -1,0 +1,16 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug build_ext",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "args": [ "build_ext", "--charm-root=/Users/vanderaa/local/spack/opt/spack/darwin-sonoma-m1/apple-clang-15.0.0/charmpp-7.0.0-653pkzmtwwnppss5cwyfumx6f57daql7" ],
+            "console": "integratedTerminal"
+        }
+    ]
+}
