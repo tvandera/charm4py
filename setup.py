@@ -5,11 +5,8 @@ from os.path import join as join_path
 import subprocess
 import setuptools
 from setuptools.command.build_ext import build_ext
-from setuptools.command.build_py import build_py
-from setuptools.command.install import install
 from distutils.errors import DistutilsSetupError
 from distutils import log
-import numpy
 
 import ctypes
 
@@ -37,15 +34,50 @@ CONFIG_SETTINGS = {
     "CHARM4PY_WRAPPER_TYPE":  "cython",
 }
 
+def if_exists(path):
+    from pathlib import Path
 
-class CharmBuilder(build_ext, object):
-    VALID_WRAPPERS = [ "cython", "cffi", "ctypes", ]
+    path = Path(path)
+    if not path.is_absolute():
+        path = Path(__file__).parent / path
 
-    def __init__(self, dist, *args):
-        self.set_config()
-        super().__init__(dist, *args)
+    if path.exists():
+        return path
+
+    return None
+
+
+class CharmBuilder(build_ext):
+    user_options = (
+        build_ext.user_options +
+        [
+            ( "disable-numpy", None, "Disable numpy support" ),
+            ( "charm-root=", None, "Existing pre-built charm++ prefix" ),
+            ( "charm-source-archive=", None, "Charm++ source archive to build" ),
+            ( "charm-build-triplet=", None, "Charm++ build triplet" ),
+            ( "charm-build-opts=", None, "Extra options to pass to ./build after triplet" ),
+            ( "charm-wappers=", None, "cython, ctypes, and/or cffi" ),
+        ]
+    )
+
+    charmroot = "woopp"
+
+    def initialize_options(self):
+        print("Initiliazing options")
+        self.numpy_enabled = True
+        self.charm_root = "blubber" # if_exists("charm_src/charm")
+        self.charm_source_archive = if_exists("charm_src/charm.tar.gz")
+        self.charm_build_triplet =  None
+        self.charm_build_opts =  None
+        self.wrapper_types = [ "ctypes", "cffi", "cython" ]
+        build_ext.initialize_options(self)
+
+    def finalize_options(self) -> None:
+        build_ext.finalize_options(self)
 
     def run(self):
+        print("self.charm_root = ", self.charm_root)
+
         charm_version = self.find_charm(must_exist=False)
         if charm_version:
             log.info(f"Found charm version {charm_version}. Not building")
@@ -55,6 +87,22 @@ class CharmBuilder(build_ext, object):
             self.build_libcharm()
 
         log.info("Now building python extension")
+
+        # from Cython.Build import cythonize
+        # self.distribution.extensions = cythonize(
+        #     setuptools.Extension(
+        #         "charm4py.charmlib.charmlib_cython",
+        #         sources=["src/charm4py/charmlib/charmlib_cython.pyx"],
+        #         include_dirs = [ numpy.get_include() ],
+        #         library_dirs = [],
+        #         libraries = [],
+        #         extra_compile_args=["-g0", "-O3"],
+        #         extra_link_args= [],
+        #     ),
+        #     build_dir="build",
+        #     compile_time_env={'HAVE_NUMPY': True},
+        # )
+
         super().run()
 
     def determin_triplet(self):
@@ -175,25 +223,8 @@ class CharmBuilder(build_ext, object):
         self.validate_charm_version(built_version)
 
 
-# compile C-extension module (from cython)
-from Cython.Build import cythonize
-
-extension = cythonize(
-        setuptools.Extension(
-            "charm4py.charmlib.charmlib_cython",
-            sources=["src/charm4py/charmlib/charmlib_cython.pyx"],
-            include_dirs = [ numpy.get_include() ],
-            library_dirs = [],
-            libraries = [],
-            extra_compile_args=["-g0", "-O3"],
-            extra_link_args= [],
-        ),
-        build_dir="build",
-        compile_time_env={'HAVE_NUMPY': True},
-    )
 
 setuptools.setup(
-    ext_modules=extension,
     cmdclass={
         "build_ext": CharmBuilder,
     },
