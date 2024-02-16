@@ -61,31 +61,11 @@ def test_run(name, interface):
     with open(output_file, "w") as stderr, open(error_file, "w") as stdout:
         subprocess.check_call(cmd, stderr=stderr, stdout=stdout, timeout=TIMEOUT)
 
-def run_and_catch(name, interface):
-    try:
-        test_run(name, interface)
-    except subprocess.TimeoutExpired:
-        print(f"{name}: TIMEOUT")
-    except subprocess.CalledProcessError:
-        print(f"{name}: FAILED")
-    else:
-        print(f"{name}: PASSED")
-
-
-def all_runs():
+def pytest_generate_tests(metafunc):
     names = [ name for name,config in ALL_TESTS.items() if is_enabled(config) ]
     runs = product(names, INTERFACES)
-    return runs
-
-def pytest_generate_tests(metafunc):
-    metafunc.parametrize("name,interface", all_runs())
-
-def main():
-    runs = all_runs()
-
-    from multiprocessing import Pool
-    with Pool(NUM_PARALLEL) as p:
-        p.starmap(run_and_catch, runs)
+    metafunc.parametrize("name,interface", runs)
 
 if __name__ == "__main__":
-    main()
+    import pytest
+    sys.exit(pytest.main())
