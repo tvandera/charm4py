@@ -41,21 +41,20 @@ CONFIG_SETTINGS = {
 class CharmBuilder(build_ext, object):
     VALID_WRAPPERS = [ "cython", "cffi", "ctypes", ]
 
-    def __init__(self, *args):
+    def __init__(self, dist, *args):
         self.set_config()
-        self.validate_config()
-        super().__init__(*args)
+        super().__init__(dist, *args)
 
     def run(self):
         charm_version = self.find_charm(must_exist=False)
         if charm_version:
             log.info(f"Found charm version {charm_version}. Not building")
-            self.check_charm_version(charm_version)
+            self.validate_charm_version(charm_version)
         else:
             log.info(f"Building charm in tree")
             self.build_libcharm()
 
-        log.info("Now building extension")
+        log.info("Now building python extension")
         super().run()
 
     def determin_triplet(self):
