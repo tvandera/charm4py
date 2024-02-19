@@ -1103,7 +1103,12 @@ def load_lib_charm(libcharm_path):
 
 def load_charm_library(charm):
     args = sys.argv
-    libcharm_path = os.path.join(os.path.dirname(__file__), '.libs')
+    try:
+        from .charmlib.libcharm_config import CHARM_LIBRARY
+        libcharm_path = os.path.dirname(CHARM_LIBRARY)
+    except:
+        libcharm_path = os.path.join(os.path.dirname(__file__), '.libs')
+
     if os.name == 'nt':
         os.environ['PATH'] += ';' + libcharm_path
     if '+libcharm_interface' in args:
