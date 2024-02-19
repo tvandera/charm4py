@@ -20,7 +20,7 @@ if PY_MAJOR_VERSION < 3:
 else:
   from pickle  import dumps, loads
 
-IF HAVE_NUMPY:
+IF HAVE_NUMPY == 1:
   import  numpy as np
   cimport numpy as np
 ELSE:
@@ -371,7 +371,7 @@ class CharmLib(object):
     cdef int numElems = 0
     cdef char* c_data = NULL
     cdef int c_data_size = 0
-    IF HAVE_NUMPY:
+    IF HAVE_NUMPY == 1:
       cdef np.ndarray np_array
     cdef array.array a
     if reducer_type == charm_reducers.external_py:
@@ -636,7 +636,7 @@ class CharmLib(object):
 
     global charm_reducer_to_ctype, rev_np_array_type_map, rev_array_type_map
     charm_reducer_to_ctype = charm.redMgr.charm_reducer_to_ctype
-    IF HAVE_NUMPY:
+    IF HAVE_NUMPY == 1:
       rev_np_array_type_map = charm.redMgr.rev_np_array_type_map
     rev_array_type_map = charm.redMgr.rev_array_type_map
 
@@ -770,7 +770,7 @@ class CharmLib(object):
     cdef int i = 0
     cdef int localTag
     cdef array.array a
-    IF HAVE_NUMPY:
+    IF HAVE_NUMPY == 1:
       cdef np.ndarray np_array
     dcopy_size = 0
     if destObj is not None: # if dest obj is local
@@ -975,7 +975,7 @@ cdef void createCallbackMsg(void *data, int dataSize, int reducerType, int fid, 
         memcpy(a.data.as_voidptr, data, item_size)
         pyData.append(a[0])
       else:
-        IF HAVE_NUMPY:
+        IF HAVE_NUMPY == 1:
           dtype = rev_np_array_type_map[ctype]
           header[b'dcopy'] = [(len(pyData), 2, (numElems, dtype), dataSize)]
         ELSE:
