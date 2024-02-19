@@ -86,6 +86,11 @@ class Charm(object):
             def flush(self):
                 pass
 
+    def __del__(self):
+        if not self.started:
+            print('Program is exiting but charm was not started: charm.start() was not '
+                  'called or error happened before start')
+
     def __init__(self):
         self.started = False
         self._myPe = -1
@@ -1181,3 +1186,4 @@ def rebuildNumpyArray(data, shape, dt):
 
 charm = Charm()
 readonlies = __ReadOnlies()
+
