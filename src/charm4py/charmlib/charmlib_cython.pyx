@@ -23,11 +23,16 @@ else:
 IF HAVE_NUMPY == 1:
   import  numpy as np
   cimport numpy as np
-ELSE:
+ELIF HAVE_NUMPY == 0:
   class NumpyDummyModule:
     class ndarray: pass
     class number: pass
   np = NumpyDummyModule()
+ELSE:
+  cdef extern from "badheader.h":
+    """
+    #error HAVE_NUMPY should be 1 or 0
+    """
 
 cdef object np_number = np.number
 
@@ -373,6 +378,7 @@ class CharmLib(object):
     cdef int c_data_size = 0
     IF HAVE_NUMPY == 1:
       cdef np.ndarray np_array
+
     cdef array.array a
     if reducer_type == charm_reducers.external_py:
       numElems = <int>len(data)
