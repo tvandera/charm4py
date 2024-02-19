@@ -1,9 +1,7 @@
 # ignore build files
 docs/_build/
 build/
-charm_src/
-charm4py/_version.py
-charm4py/charmlib/build/
+src/charm4py/_version.py
 __pycache__
 charm4py.egg-info
 
