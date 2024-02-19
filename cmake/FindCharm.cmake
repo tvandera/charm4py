@@ -27,14 +27,19 @@
 #           CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE}")
 #  endif()
 
-function(_GET_CHARMINC _OUT_INC _charmc)
-  file(STRINGS ${_charmc} _contents REGEX "^CHARMINC=")
-  if(_contents)
-    string(REGEX REPLACE "^CHARMINC=\"(.*)\"" "\\1" ${_OUT_INC} "${_contents}")
-    set(${_OUT_INC} ${${_OUT_INC}} PARENT_SCOPE)
-  else()
-    message(FATAL_ERROR "file ${_charmc} does not exist")
-  endif()
+function(_GET_CHARMHINTS _OUT_INC _OUT_LIB _charmc)
+  execute_process(
+      COMMAND ${_charmc} "-debug-script"
+      OUTPUT_VARIABLE OUTPUT
+  )
+  string(REGEX MATCH "CHARMINC=[^\n\r]+" INC "${OUTPUT}")
+  string(REGEX REPLACE "CHARMINC=" "" INC "${INC}")
+  set(${_OUT_INC} ${INC} PARENT_SCOPE)
+
+  string(REGEX MATCH "CHARMLIB=[^\n\r]+" LIB "${OUTPUT}")
+  string(REGEX REPLACE "CHARMLIB=" "" LIB "${LIB}")
+  set(${_OUT_LIB} ${LIB} PARENT_SCOPE)
+
 endfunction()
 
 # find out if Charm++ was built with randomzied message queues
@@ -105,8 +110,10 @@ FIND_PROGRAM(AMPI_RUN
 )
 
 if(CHARM_COMPILER)
-  _GET_CHARMINC(HINTS_CHARMINC ${CHARM_COMPILER})
+  _GET_CHARMHINTS(HINTS_CHARMINC HINTS_CHARMLIB ${CHARM_COMPILER})
 endif()
+message("INC HINT: ${HINTS_CHARMINC}")
+message("LIB HINT: ${HINTS_CHARMLIB}")
 
 FIND_PATH(CHARM_INCLUDE_DIR NAMES charm.h
                             HINTS ${HINTS_CHARMINC}
@@ -114,6 +121,13 @@ FIND_PATH(CHARM_INCLUDE_DIR NAMES charm.h
                                   $ENV{CHARM_ROOT}/include
                                   ${CMAKE_INSTALL_PREFIX}/charm/include
                             PATH_SUFFIXES charm)
+
+FIND_LIBRARY(CHARM_LIBRARY NAMES charm
+                          HINTS ${HINTS_CHARMLIB}
+                                ${CHARM_ROOT}/lib
+                                $ENV{CHARM_ROOT}/lib
+                                ${CMAKE_INSTALL_PREFIX}/charm/lib
+                          PATH_SUFFIXES charm)
 
 if(CHARM_INCLUDE_DIR)
   FIND_PATH(CHARM_CONV_HDR NAMES conv-autoconfig.h
@@ -134,6 +148,19 @@ endif()
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(Charm DEFAULT_MSG CHARM_COMPILER
                                   CHARM_INCLUDE_DIRS CHARM_RUN)
+
+if(LibXml2_FOUND AND NOT TARGET LibXml2::LibXml2)
+  add_library(LibXml2::LibXml2 UNKNOWN IMPORTED)
+  set_target_properties(LibXml2::LibXml2 PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${LIBXML2_INCLUDE_DIRS}")
+  set_target_properties(LibXml2::LibXml2 PROPERTIES INTERFACE_COMPILE_OPTIONS "${LIBXML2_DEFINITIONS}")
+  set_property(TARGET LibXml2::LibXml2 APPEND PROPERTY IMPORTED_LOCATION "${LIBXML2_LIBRARY}")
+endif()
+
+if(LIBXML2_XMLLINT_EXECUTABLE AND NOT TARGET LibXml2::xmllint)
+add_executable(LibXml2::xmllint IMPORTED)
+set_target_properties(LibXml2::xmllint PROPERTIES IMPORTED_LOCATION "${LIBXML2_XMLLINT_EXECUTABLE}")
+endif()
+
 
 if(AMPI_C_COMPILER AND AMPI_CXX_COMPILER)
   set(AMPI_FOUND true)
