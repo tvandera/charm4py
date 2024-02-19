@@ -13,7 +13,8 @@ TIMEOUT = 60  # timeout for each test (in seconds)
 COMMON_ARGS = ['++local']
 DEFAULT_NPROCS = int(os.environ.get('CHARM4PY_TEST_NUM_PROCESSES', 4))
 INTERFACES = ['ctypes', 'cython']
-CONFIG_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_config.json")
+ROOT_TEST_DIR = os.path.dirname(os.path.realpath(__file__))
+CONFIG_FILE = os.path.join(ROOT_TEST_DIR, "test_config.json")
 with open(CONFIG_FILE, 'r') as infile:
         ALL_TESTS = json.load(infile)
 
@@ -59,7 +60,13 @@ def test_run(name, interface):
     logging.debug("errror log in: %s", error_file)
 
     with open(output_file, "w") as stderr, open(error_file, "w") as stdout:
-        subprocess.check_call(cmd, stderr=stderr, stdout=stdout, timeout=TIMEOUT)
+        subprocess.check_call(
+            cmd,
+            stderr=stderr,
+            stdout=stdout,
+            timeout=TIMEOUT,
+            cwd=ROOT_TEST_DIR,
+        )
 
 def pytest_generate_tests(metafunc):
     names = [ name for name,config in ALL_TESTS.items() if is_enabled(config) ]
