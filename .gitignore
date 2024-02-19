@@ -15,7 +15,7 @@ charm4py.egg-info
 *.pyc
 
 # ignore binaries
-charm4py/.libs/
+src/charm4py/.libs/
 charmrun/charmrun
 
 # ignore macOS specific files

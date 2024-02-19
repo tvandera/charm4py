@@ -14,7 +14,7 @@ charmrun
 After installing Charm4py as explained in the previous section, you can launch
 applications like this::
 
-    $ python3 -m charmrun.start +p4 myprogram.py
+    $ python3 -m charm4py.charmrun +p4 myprogram.py
 
 The option ``+pN`` specifies how many processes to run the application with.
 
@@ -26,7 +26,7 @@ installed and your system configuration)::
 You can launch an *interactive shell* using the ``++interactive`` option, for
 example::
 
-    $ python3 -m charmrun.start +p4 ++interactive
+    $ python3 -m charm4py.charmrun +p4 ++interactive
 
 Charm4py programs accept the `same command-line parameters`_ as Charm++.
 
@@ -50,7 +50,7 @@ specifying four hosts::
 
 The application can be launched like this::
 
-    $ python3 -m charmrun.start +pN myprogram.py ++nodelist mynodelist.txt
+    $ python3 -m charm4py.charmrun +pN myprogram.py ++nodelist mynodelist.txt
 
 With this method, charmrun uses ``ssh`` to log into remote machines and spawn processes.
 

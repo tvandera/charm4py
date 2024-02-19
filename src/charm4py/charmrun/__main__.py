@@ -68,7 +68,7 @@ def start(args=[]):
     import subprocess
 
     if os.environ.get("IN_PYCHARMRUN", '0') == '1':
-        raise RecursionError("Recursive call of charmrun.start")
+        raise RecursionError("Recursive call of charm4py.charmrun")
 
     os.environ["IN_PYCHARMRUN"] = '1'
 

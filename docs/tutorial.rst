@@ -13,7 +13,7 @@ For examples, you can refer to :doc:`examples`.
 
 To begin, launch an interactive session with 2 processes::
 
-    $ python3 -m charmrun.start +p2 ++interactive
+    $ python3 -m charm4py.charmrun +p2 ++interactive
 
 
 This launches Charm4py with two processes on the local host, with an interactive

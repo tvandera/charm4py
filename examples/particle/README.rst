@@ -21,11 +21,11 @@ Cell array of size 8 x 4, running on 4 PEs:
 
 To run without load balancing (this or equivalent command)::
 
-    $ python3 -m charmrun.start +p4 particle.py 8 4 10000
+    $ python3 -m charm4py.charmrun +p4 particle.py 8 4 10000
 
 To run with dynamic load balancing::
 
-    $ python3 -m charmrun.start +p4 particle.py 8 4 10000 +balancer GreedyRefineLB
+    $ python3 -m charm4py.charmrun +p4 particle.py 8 4 10000 +balancer GreedyRefineLB
 
 
 NOTE: Load between chares will tend to become uniform as the simulation

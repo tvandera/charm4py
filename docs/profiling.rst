@@ -50,7 +50,7 @@ You can also invoke this remotely, doing ``charm.thisProxy[pe].printStats()``
 (like any other remote method, you can also wait for its completion).
 
 Here is some example output of the profiler from ``examples/particle/particle.py``
-executed on 4 PEs with ``python3 -m charmrun.start +p4 particle.py +balancer GreedyRefineLB``:
+executed on 4 PEs with ``python3 -m charm4py.charmrun +p4 particle.py +balancer GreedyRefineLB``:
 
 .. code-block:: text
 
