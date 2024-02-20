@@ -38,6 +38,7 @@ add_custom_command(
   DEPENDS ./src/charm4py/charmlib/charmlib_cython.pyx
   VERBATIM
   COMMAND "${CYTHON}"
+          -3
           -I${Python_NumPy_INCLUDE_DIRS}
           --compile-time-env HAVE_NUMPY=${HAVE_NUMPY}
           --output-file "${CMAKE_CURRENT_BINARY_DIR}/charm4py/charmlib/charmlib_cython.c"
