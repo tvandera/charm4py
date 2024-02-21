@@ -5,6 +5,8 @@ import json
 import logging
 from itertools import product
 
+from charm4py.charmlib.libcharm_config import CHARM_RUN
+
 logging.basicConfig(level=logging.INFO)
 
 # ----------------------------------------------------------------------------------
@@ -39,14 +41,13 @@ def test_run(name, interface):
     test = ALL_TESTS[name]
     fullname = name.replace("/", "_") + '-' + interface
 
-    charmrun = 'charmrun'
     prefix = test.get('prefix') # extra args before 'python'
     python = sys.executable  # python interpreter path
     path = test['path'] # .py test file
     args = test.get('args', '').split(' ') + COMMON_ARGS
     nproc = str(max(test.get('force_min_processes', DEFAULT_NPROCS), DEFAULT_NPROCS))
 
-    cmd = [ charmrun, prefix, python, path ] + args + [ '+p', nproc, '+libcharm_interface', interface ]
+    cmd = [ CHARM_RUN, prefix, python, path ] + args + [ '+p', nproc, '+libcharm_interface', interface ]
 
     # remove empty strings from list
     cmd = [ arg for arg in cmd if arg ]
