@@ -75,9 +75,9 @@ and wait for it to complete, in this manner:
 
 .. code-block:: python
 
-    from charmrun import start
+    from charm4py import charmrun
 
-    start.start(['+p4', 'myprogram.py'])  # launch parallel application and wait for completion
+    charmrun.start(['+p4', 'myprogram.py'])  # launch parallel application and wait for completion
 
 
 Note that you can also use Python's ``subprocess`` library and launch the same command
